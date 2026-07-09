@@ -1,0 +1,32 @@
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models.
+
+name: 'Airbnb_Project1'
+version: '1.0.0'
+
+# This setting configures which profile dbt uses for this project.
+profile: 'Airbnb_Project1'
+
+# Paths
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+# Directories to be removed by `dbt clean`
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Model configurations
+models:
+  Airbnb_Project1:
+    Raw:
+      +materialized: table
+      +schema: raw
+    Silver:
+      +materialized: table
+      +schema: silver

@@ -1,0 +1,11 @@
+.venv/
+.vscode/
+logs/
+__pycache__/
+*.pyc
+
+# DBT specific
+target/
+dbt_packages/
+profiles.yml
+.user.yml
