@@ -1,10 +1,10 @@
 # Airbnb_Project1 - dbt Project Documentation
 
-This directory contains the dbt Core project responsible for transforming raw Airbnb data into analytics-ready datasets using the Medallion Architecture.
+This directory contains the **dbt Core** project responsible for transforming raw Airbnb data into analytics-ready datasets using the **Medallion Architecture (Bronze → Silver → Gold)** on Snowflake.
 
 ---
 
-# Project Structure
+# 📁 Project Structure
 
 ```text
 Airbnb_Project1
@@ -12,75 +12,103 @@ Airbnb_Project1
 ├── analyses/
 ├── macros/
 ├── models/
-│   ├── Raw/
+│   ├── Bronze/
 │   ├── Silver/
 │   └── Gold/
 ├── seeds/
 ├── snapshots/
 ├── tests/
-├── sources/
 ├── dbt_project.yml
+├── sources.yml
 └── README.md
 ```
 
 ---
 
-# Model Layers
+# 🏗 Project Architecture
 
-## Bronze Layer
+```text
+AWS S3
+   │
+   ▼
+Snowflake Stage
+   │
+   ▼
+Bronze Models
+   │
+   ▼
+Silver Models
+   │
+   ▼
+Gold Models
+   ├── Star Schema
+   └── One Big Table (OBT)
+```
 
-The Bronze layer ingests raw Airbnb data from Snowflake staging tables while preserving the original source data.
+---
+
+# 🥉 Bronze Layer
+
+The Bronze layer ingests raw Airbnb datasets from AWS S3 into Snowflake while preserving the original source data.
 
 ### Models
 
-- raw_bookings
-- raw_hosts
-- raw_listings
+- `raw_bookings`
+- `raw_hosts`
+- `raw_listings`
 
 ### Features
 
-- Incremental Loading
+- Incremental Models
+- COPY INTO
+- Snowflake External Stages
 - Source Definitions
 - Raw Data Preservation
 
 ---
 
-## Silver Layer
+# 🥈 Silver Layer
 
-The Silver layer applies business transformations, standardization, and feature engineering to prepare data for analytics.
+The Silver layer cleans, standardizes, and enriches raw datasets using modular SQL transformations and reusable Jinja macros.
 
 ### Models
 
-- silver_bookings
-- silver_hosts
-- silver_listings
+- `silver_bookings`
+- `silver_hosts`
+- `silver_listings`
 
 ### Transformations
 
-- Booking amount calculation
-- Price categorization
-- Response rate categorization
-- Host name standardization
-- Data cleaning
-- Business logic implementation
+- Data Cleaning
+- Data Standardization
+- Feature Engineering
+- Business Logic
+- Metadata-Driven Transformations
+- Incremental Processing
 
 ---
 
-## Gold Layer
+# 🥇 Gold Layer
 
-The Gold layer combines the transformed Silver models into a single analytics-ready **One Big Table (OBT)** optimized for reporting and Business Intelligence.
+The Gold layer contains business-ready datasets designed for reporting and analytics.
 
-### Model
+### Implemented Models
 
-- obt_airbnb
+- ⭐ Star Schema
+- ⭐ One Big Table (OBT)
+
+### Features
+
+- Dimensional Modeling
+- Reporting Models
+- Analytics-Ready Tables
+- Historical Tracking using Snapshots
 
 ---
 
-# Incremental Models
+# ⚡ Incremental Models
 
-Incremental loading is implemented using dbt's native incremental materialization.
-
-Example configuration:
+Incremental loading is implemented using dbt's incremental materialization.
 
 ```jinja
 {{ config(
@@ -89,48 +117,82 @@ Example configuration:
 ) }}
 ```
 
-The project uses:
+Combined with:
 
-- `materialized='incremental'`
 - `unique_key`
 - `is_incremental()`
-- `CREATED_AT` watermark filtering
+- Watermark filtering using `CREATED_AT`
+
+This ensures that only newly added records are processed during subsequent pipeline executions.
 
 ---
 
-# Custom Macros
+# 🧩 Metadata-Driven Pipeline
 
-The project includes reusable Jinja macros located in the `macros/` directory.
+The project follows a metadata-driven approach where reusable configurations and Jinja templating are used to reduce repetitive SQL and improve maintainability.
 
-| Macro | Purpose |
-|--------|---------|
-| multiply.sql | Calculates booking totals |
-| tag.sql | Categorizes property prices |
-| trim.sql | Cleans and standardizes string values |
+Benefits include:
 
----
-
-# Metadata-Driven Pipeline
-
-The Gold layer follows a metadata-driven design that minimizes repetitive SQL by using reusable configurations and modular transformations. This approach improves maintainability and scalability while keeping the SQL concise and reusable.
+- Reusable SQL
+- Centralized business logic
+- Easy scalability
+- Cleaner model design
 
 ---
 
-# Project Configuration
+# 🔧 Custom Macros
 
-The project configuration is managed through:
+Reusable Jinja macros are stored in the `macros/` directory.
 
-- `dbt_project.yml`
-- `profiles.yml`
-- `sources.yml`
-
-These files define model configurations, Snowflake connections, schemas, and source tables.
+| Macro | Description |
+|--------|-------------|
+| `multiply.sql` | Calculates booking totals |
+| `tag.sql` | Categorizes listing prices |
+| `trim.sql` | Standardizes string values |
 
 ---
 
-# Running the Project
+# 📸 Snapshots (SCD Type 2)
 
-Compile all models
+Snapshots are implemented to capture historical changes in dimension tables.
+
+Features:
+
+- Slowly Changing Dimensions (Type 2)
+- Historical Record Tracking
+- Auditability
+
+---
+
+# ✅ Data Quality Tests
+
+The project includes dbt tests to validate data quality.
+
+Implemented validations include:
+
+- `not_null`
+- `unique`
+- `relationships`
+- `accepted_values`
+
+---
+
+# 📚 Source Definitions
+
+Source tables are defined using `sources.yml`.
+
+Benefits:
+
+- Automatic Lineage Generation
+- Documentation
+- Source Freshness
+- Centralized Source Management
+
+---
+
+# ▶ Running the Project
+
+Compile models
 
 ```bash
 dbt compile
@@ -142,10 +204,10 @@ Run all models
 dbt run
 ```
 
-Run a specific model
+Run tests
 
 ```bash
-dbt run --select silver_bookings
+dbt test
 ```
 
 Generate documentation
@@ -154,7 +216,7 @@ Generate documentation
 dbt docs generate
 ```
 
-Serve documentation
+View documentation
 
 ```bash
 dbt docs serve
@@ -162,16 +224,38 @@ dbt docs serve
 
 ---
 
-# Future Improvements
+# 📖 Project Configuration
 
-- Add dbt Data Quality Tests
-- Implement dbt Snapshots (SCD Type 2)
-- Build a dimensional Star Schema alongside the current OBT model
-- Automate deployments with CI/CD
-- Improve pipeline monitoring and observability
+Configuration files used in this project:
+
+- `dbt_project.yml`
+- `profiles.yml`
+- `sources.yml`
+
+These files define:
+
+- Snowflake connection settings
+- Model materializations
+- Custom schemas
+- Source definitions
+- Project configurations
 
 ---
 
-# Notes
+# 🚀 Future Improvements
 
-This dbt project was developed as part of a hands-on learning journey inspired by the excellent **End-to-End Data Engineering Project** by **Ansh Lamba**. The implementation was completed independently to gain practical experience with Snowflake, dbt Core, SQL, and modern ELT pipeline development.
+Potential enhancements include:
+
+- Apache Airflow orchestration
+- GitHub Actions CI/CD
+- Docker support
+- Data observability
+- Infrastructure as Code (Terraform)
+
+---
+
+# 📝 Notes
+
+This dbt project was implemented as part of a hands-on learning journey inspired by **Ansh Lamba's End-to-End Data Engineering Project**.
+
+The project was completed to gain practical experience with **AWS S3**, **Snowflake**, **dbt Core**, **Jinja**, and modern cloud-native data engineering workflows.
