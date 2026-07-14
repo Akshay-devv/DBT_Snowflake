@@ -11,47 +11,53 @@
 
 </p>
 
-An end-to-end **ELT (Extract, Load, Transform)** Data Engineering pipeline built using **AWS S3, Snowflake, and dbt Core** following the **Medallion Architecture (Bronze → Silver → Gold)**. The project demonstrates modern data engineering practices including incremental loading, metadata-driven pipelines, reusable Jinja macros, and an analytics-ready **One Big Table (OBT)** for reporting.
+An end-to-end **ELT (Extract, Load, Transform)** Data Engineering pipeline built using **AWS S3, Snowflake, and dbt Core**, implementing a complete **Medallion Architecture (Bronze → Silver → Gold)**.
+
+The project demonstrates modern cloud data engineering practices including incremental loading, metadata-driven pipelines, reusable Jinja macros, ephemeral models, data quality testing, **Star Schema**, **One Big Table (OBT)**, **Slowly Changing Dimensions (SCD Type 2)**, and **dbt Snapshots**.
 
 ---
 
-# 🏗 Architecture
+# 🏗️ Architecture
 
 ```text
-                 Airbnb Dataset
-                        │
-                        ▼
-                   AWS S3 Bucket
-                        │
-                        ▼
-               Snowflake External Stage
-                        │
-                        ▼
-              Snowflake Staging Tables
-                        │
-                        ▼
-                 Bronze Layer
-                        │
-                        ▼
-                 Silver Layer
-                        │
-                        ▼
-           Gold Layer (One Big Table)
-                        │
-                        ▼
-               Analytics & Reporting
+              Airbnb CSV Dataset
+                     │
+                     ▼
+               AWS S3 Data Lake
+                     │
+                     ▼
+        Snowflake External Stage
+                     │
+                     ▼
+         Snowflake Staging Tables
+                     │
+                     ▼
+        Bronze Layer (Incremental)
+                     │
+                     ▼
+ Silver Layer (Cleaning & Transformation)
+                     │
+                     ▼
+              Gold Layer
+        ┌──────────┴──────────┐
+        ▼                     ▼
+  Star Schema        One Big Table (OBT)
+        │                     │
+        └──────────┬──────────┘
+                   ▼
+        Analytics & Business Intelligence
 ```
 
 ---
 
-# 🛠 Tech Stack
+# 🛠️ Tech Stack
 
 | Category | Technology |
 |----------|------------|
 | Cloud Storage | AWS S3 |
-| Data Warehouse | Snowflake |
-| Transformation | dbt Core |
-| Language | SQL, Python |
+| Cloud Data Warehouse | Snowflake |
+| Data Transformation | dbt Core |
+| Programming | SQL, Python |
 | Templating | Jinja |
 | Version Control | Git & GitHub |
 
@@ -60,15 +66,22 @@ An end-to-end **ELT (Extract, Load, Transform)** Data Engineering pipeline built
 # ✨ Features
 
 - ✅ End-to-End ELT Pipeline
-- ✅ AWS S3 → Snowflake Data Ingestion
+- ✅ AWS S3 Data Lake Integration
+- ✅ Snowflake External Stages
 - ✅ Medallion Architecture
-- ✅ Bronze, Silver & Gold Layers
+- ✅ Bronze Layer
+- ✅ Silver Layer
+- ✅ Gold Layer
+- ✅ Star Schema
+- ✅ One Big Table (OBT)
 - ✅ Incremental Data Loading
 - ✅ Metadata-Driven Pipeline
 - ✅ Reusable dbt Jinja Macros
-- ✅ One Big Table (OBT)
-- ✅ Modular SQL Models
-- ✅ Cloud Data Warehousing
+- ✅ Ephemeral Models
+- ✅ Slowly Changing Dimensions (SCD Type 2)
+- ✅ dbt Snapshots
+- ✅ Data Quality Testing
+- ✅ dbt Documentation & Lineage
 
 ---
 
@@ -80,7 +93,7 @@ Airbnb_Project1
 ├── analyses/
 ├── macros/
 ├── models/
-│   ├── Raw/
+│   ├── Bronze/
 │   ├── Silver/
 │   └── Gold/
 ├── seeds/
@@ -95,48 +108,68 @@ Airbnb_Project1
 
 # 🥉 Bronze Layer
 
-Stores raw Airbnb datasets in Snowflake using incremental dbt models while preserving source data.
+The Bronze layer ingests raw Airbnb datasets from **AWS S3** into **Snowflake** while preserving the original source data.
 
-**Models**
-- raw_bookings
-- raw_hosts
-- raw_listings
+**Key Features**
+
+- Incremental Loading
+- External Stages
+- File Formats
+- COPY INTO
+- Raw Data Preservation
 
 ---
 
 # 🥈 Silver Layer
 
-Transforms and standardizes raw data by applying business logic, feature engineering, and data cleaning.
+The Silver layer transforms raw data into clean, standardized datasets by applying business logic and reusable transformations.
 
-**Models**
-- silver_bookings
-- silver_hosts
-- silver_listings
+**Key Features**
+
+- Metadata-Driven Pipeline
+- Jinja Templating
+- Custom Macros
+- Ephemeral Models
+- Feature Engineering
+- Data Cleaning
+- Data Standardization
 
 ---
 
 # 🥇 Gold Layer
 
-Builds an analytics-ready **One Big Table (OBT)** by combining booking, listing, and host information into a denormalized reporting dataset optimized for Business Intelligence.
+The Gold layer provides analytics-ready datasets optimized for Business Intelligence and reporting.
+
+Implemented models include:
+
+- ⭐ Star Schema
+- ⭐ One Big Table (OBT)
+
+Additional Features
+
+- Slowly Changing Dimensions (SCD Type 2)
+- dbt Snapshots
+- Analytics-ready data models
 
 ---
 
 # ⚡ Incremental Loading
 
-Incremental models are implemented using:
+Incremental models are implemented using dbt's native incremental materialization.
+
+Features:
 
 - `materialized='incremental'`
 - `unique_key`
 - `is_incremental()`
-- Watermark filtering using `CREATED_AT`
-
-This ensures that only newly added records are processed, improving performance and reducing compute costs.
+- Watermark filtering
+- Optimized processing
 
 ---
 
 # 🧩 Metadata-Driven Pipeline
 
-The project leverages reusable dbt models, Jinja macros, and modular SQL components to minimize code duplication, improve maintainability, and simplify future enhancements.
+The project leverages metadata-driven transformations using reusable configurations, modular SQL models, Jinja templating, and custom macros to minimize repetitive code and improve maintainability.
 
 ---
 
@@ -144,9 +177,9 @@ The project leverages reusable dbt models, Jinja macros, and modular SQL compone
 
 | Macro | Purpose |
 |--------|---------|
-| `multiply.sql` | Calculates booking totals |
-| `tag.sql` | Categorizes listing prices |
-| `trim.sql` | Standardizes string values |
+| `multiply.sql` | Booking amount calculations |
+| `tag.sql` | Property price categorization |
+| `trim.sql` | String standardization |
 
 ---
 
@@ -155,13 +188,13 @@ The project leverages reusable dbt models, Jinja macros, and modular SQL compone
 Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/<repository-name>.git
+git clone https://github.com/Akshay-devv/DBT_Snowflake.git
 ```
 
 Navigate to the project
 
 ```bash
-cd Airbnb_Project1
+cd DBT_Snowflake/Airbnb_Project1
 ```
 
 Install dependencies
@@ -170,11 +203,14 @@ Install dependencies
 pip install dbt-snowflake
 ```
 
-Run the project
+Run the pipeline
 
 ```bash
 dbt compile
 dbt run
+dbt test
+dbt docs generate
+dbt docs serve
 ```
 
 ---
@@ -182,38 +218,58 @@ dbt run
 # 📊 Skills Demonstrated
 
 - Data Engineering
-- ELT Pipelines
-- Snowflake
+- ELT Pipeline Development
+- Cloud Data Warehousing
 - AWS S3
+- Snowflake
 - dbt Core
 - SQL
+- Python
 - Jinja
-- Medallion Architecture
 - Metadata-Driven Pipelines
-- Incremental Loading
+- Incremental Models
+- Star Schema
 - One Big Table (OBT)
+- Slowly Changing Dimensions (SCD Type 2)
+- dbt Snapshots
+- Data Quality Testing
 - Git & GitHub
+
+---
+
+# 📚 What I Learned
+
+Through this project, I gained hands-on experience with:
+
+- Building cloud-native ELT pipelines
+- Designing Medallion Architecture
+- Configuring AWS S3 and Snowflake integrations
+- Developing modular transformations with dbt
+- Writing reusable Jinja macros
+- Implementing incremental processing
+- Managing historical data using SCD Type 2 Snapshots
+- Building analytical models using Star Schema and One Big Table (OBT)
 
 ---
 
 # 🚧 Future Enhancements
 
-- Implement dbt Data Quality Tests
-- Implement dbt Snapshots (SCD Type 2)
-- Generate dbt Documentation & Lineage
-- Build a Star Schema alongside the current OBT model
+- Apache Airflow for pipeline orchestration
 - CI/CD using GitHub Actions
-- Pipeline Monitoring & Alerting
+- Power BI dashboards on the Gold Layer
+- Docker containerization
+- Data observability & monitoring
+- Infrastructure as Code (Terraform)
 
 ---
 
 # 🙏 Acknowledgements
 
-This project was built as part of a hands-on learning journey inspired by the excellent **End-to-End Data Engineering Project** by **Ansh Lamba**.
+This project was completed as part of a hands-on learning journey inspired by **Ansh Lamba's End-to-End Data Engineering Project**.
 
-While the project follows the concepts taught in the tutorial, I independently implemented the pipeline, configured the environment, debugged issues, documented the project, and gained practical experience with AWS, Snowflake, and dbt Core.
+While the project architecture and concepts were learned from the tutorial, I independently configured the cloud infrastructure, implemented the complete data pipeline, resolved implementation challenges, documented the project, and gained practical experience with AWS, Snowflake, and dbt Core.
 
-Special thanks to **Ansh Lamba** for creating such a comprehensive learning resource.
+Special thanks to **Ansh Lamba** for creating such an exceptional educational resource.
 
 ---
 
@@ -221,6 +277,6 @@ Special thanks to **Ansh Lamba** for creating such a comprehensive learning reso
 
 **Akshay Balaji**
 
-Aspiring Data Engineer passionate about building scalable cloud-native data platforms using **Snowflake, dbt, SQL, Python, and AWS**.
+Data Engineer passionate about building scalable cloud-native data platforms and modern data engineering solutions.
 
 ⭐ If you found this project helpful, consider giving it a star!
